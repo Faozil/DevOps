@@ -1,0 +1,32 @@
+---
+- name: Provisioning as learnt
+  hosts: all
+  become: yes
+  tasks:
+    - name: Downloading ntp on centos
+      yum:
+        name: chrony
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Downloading ntp on ubuntu
+      apt:
+        update_cache: yes
+        name: ntp
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Starting ntp services
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Starting ntp service on ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+

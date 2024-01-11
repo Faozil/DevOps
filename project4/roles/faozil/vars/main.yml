@@ -1,0 +1,6 @@
+---
+# vars file for faozil
+mydir:
+  - /tmp/faozil
+  - /opt/faozil
+

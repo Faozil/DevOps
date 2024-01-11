@@ -1,0 +1,99 @@
+---
+# tasks file for faozil
+- name: adding group
+  ansible.builtin.group:
+    name: faozil
+    state: present
+
+- name: adding users
+  user:
+    name: "{{item.name}}"
+    group: "{{item.group}}"
+    shell: /bin/bash
+  loop:
+    - { name: 'faozil', group: 'faozil' }
+    - { name: 'mum', group: 'root' }
+    - { name: 'ridwan', group: 'faozil' }
+
+
+- name: Downloading ntp on centos
+  yum:
+    name: "{{item}}"
+    state: present
+  when: ansible_distribution == "CentOS"
+  loop:
+    - chrony
+    - wget
+    - httpd
+    - zip
+    - git
+    - unzip
+
+- name: Downloading ntp on ubuntu
+  apt:
+    update_cache: yes
+    name: "{{item}}"
+    state: present
+  when: ansible_distribution == "Ubuntu"
+  loop:
+    - ntp
+    - wget
+    - apache2
+    - zip
+    - git
+    - unzip
+
+- name: Starting ntp services
+  service:
+    name: "{{item}}"
+    state: started
+    enabled: yes
+  when: ansible_distribution == "CentOS"
+  loop:
+    - chronyd
+    - httpd
+
+- name: Starting ntp service on ubuntu
+  service:
+    name: "{{item}}"
+    state: started
+    enabled: yes
+  when: ansible_distribution == "Ubuntu"
+  loop:
+    - ntp
+    - apache2
+
+- name: Copy using inline content
+  ansible.builtin.copy:
+    content: '# This server is managed by ansible control. Do not change.'
+    dest: /etc/motd
+
+- name: Creating a directory
+  file:
+    path: "{{mydir}}"
+    state: directory
+    mode: 0755
+
+- name: Dumping files using copy module.
+  copy:
+    src: files/myfile.txt
+    dest: /tmp/myfile.txt
+
+- name: Deploying ntp agent conf on centos
+  template:
+    src: templates/chronyconf_centos
+    dest: /etc/chrony.conf
+    backup: yes
+  when: ansible_distribution == "CentOS"
+  notify:
+    - restarting ntp service on CentOs
+
+- name: Deploying ntp agent conf on ubuntu
+  template:
+    src: templates/chronyconf_ubuntu
+    dest: /etc/ntp.conf
+    backup: yes
+  when: ansible_distribution == "Ubuntu"
+  notify:
+    - restarting ntp service on ubuntu
+

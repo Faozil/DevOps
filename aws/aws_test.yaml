@@ -1,0 +1,37 @@
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: create a new EC2 key pair
+      ec2_key:
+        name: test
+        region: us-east-1
+      register: keyout
+
+    - name: saving key
+      debug:
+        var: keyout
+
+    - name: copying out key
+      copy:
+        content: "{{keyout.key.private_key}}"
+        dest: ./test.pem
+      when: keyout.changed == True
+
+    - name: start an instance
+      amazon.aws.ec2_instance:
+        name: "Faozil"
+        key_name: "test"
+        #vpc_subnet_id: subnet-5ca1ab1e
+        instance_type: t2.micro
+        security_group: default
+        #network:
+          #assign_public_ip: true
+        image_id: ami-0fc5d935ebf8bc3bc
+        exact_count: 1
+        region: us-east-1
+        state: started
+        wait: True
+        tags:
+          Environment: Testing
+
+

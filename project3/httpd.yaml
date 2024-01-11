@@ -1,0 +1,15 @@
+- name: Downloading httpd 
+  hosts: all
+  become: yes
+  tasks:
+    - name: downlaoding the daemon
+      yum:
+        name: httpd
+        state: present
+    
+    - name: enabling services
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+
